@@ -106,9 +106,13 @@ function requireAuth(req, res, next) {
   }
 }
 
+// Get client directory path (works in both local and Vercel environments)
+const clientDir = path.join(__dirname, '../client');
+const clientPath = path.resolve(clientDir);
+
 // Protect home page BEFORE static - only logged-in users can access
 app.get('/home.html', requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/home.html'));
+  res.sendFile(path.join(clientPath, 'home.html'));
 });
 
 // Root - landing page if not logged in, home if logged in
@@ -116,12 +120,12 @@ app.get('/', (req, res) => {
   if (req.session && req.session.userId) {
     res.redirect('/home.html');
   } else {
-    res.sendFile(path.join(__dirname, '../client/landing.html'));
+    res.sendFile(path.join(clientPath, 'landing.html'));
   }
 });
 
 // Serve static files from client folder (after protected routes)
-app.use(express.static(path.join(__dirname, '../client')));
+app.use(express.static(clientPath));
 
 // Database initialization promise (for Vercel serverless)
 let dbInitPromise = null;
