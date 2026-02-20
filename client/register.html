@@ -91,7 +91,10 @@
         const data = await res.json();
         
         if (data.success) {
-          window.location.href = data.redirect || '/home.html';
+          // Small delay to ensure session cookie is set (important for Vercel/serverless)
+          setTimeout(() => {
+            window.location.href = data.redirect || '/home.html';
+          }, 100);
         } else {
           errorEl.textContent = data.message || 'Registration failed';
           // Add helpful hint when userId is taken

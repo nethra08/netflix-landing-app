@@ -51,9 +51,11 @@ async function initializeSessionStore() {
     };
     sessionStore = new MySQLStore(storeConfig);
     console.log('✅ MySQL session store initialized');
+    return sessionStore;
   } catch (error) {
     console.warn('⚠️  Could not configure MySQL session store, using memory store:', error.message);
     sessionStore = null;
+    return null;
   }
 }
 
@@ -67,7 +69,9 @@ try {
   console.log('ℹ️  Session store will use memory until database is configured');
 }
 
-app.use(session({
+// Session middleware configuration
+// For Vercel: Use 'none' for sameSite if needed, but 'lax' should work for same-domain
+const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'movie-app-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
@@ -80,20 +84,24 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     path: '/', // Ensure cookie is available for all routes
   },
-}));
+  // Force save session even if not modified (important for serverless)
+  rolling: true,
+};
+
+app.use(session(sessionConfig));
 
 /**
  * Session check middleware - protects routes
  */
 function requireAuth(req, res, next) {
-  // Debug: Log session info (remove in production)
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('Session check:', {
-      hasSession: !!req.session,
-      userId: req.session?.userId,
-      cookies: req.headers.cookie,
-    });
-  }
+  // Debug: Log session info (helpful for debugging Vercel issues)
+  console.log('Session check:', {
+    hasSession: !!req.session,
+    userId: req.session?.userId,
+    sessionId: req.sessionID,
+    cookies: req.headers.cookie ? 'present' : 'missing',
+    path: req.path,
+  });
   
   if (req.session && req.session.userId) {
     next();
@@ -137,7 +145,12 @@ async function ensureDbInitialized() {
     if (!dbInitPromise) {
       dbInitPromise = initDatabase().then(async () => {
         // Initialize session store after DB is ready
-        await initializeSessionStore();
+        const store = await initializeSessionStore();
+        // Update session middleware store if it was null
+        if (store && !sessionStore) {
+          sessionStore = store;
+          // Note: Can't update middleware after app.use(), but store will be used for new sessions
+        }
         return true;
       }).catch(err => {
         console.error('Database initialization error:', err);
@@ -224,11 +237,22 @@ app.post('/api/register', async (req, res) => {
     // Auto-login: create session so user goes straight to home
     req.session.userId = userId;
     req.session.userName = name;
-
-    res.status(201).json({
-      success: true,
-      message: 'Account created! Taking you to the movies...',
-      redirect: '/home.html',
+    
+    // Force save session before sending response (critical for serverless/Vercel)
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Session error. Please try again.',
+        });
+      }
+      
+      res.status(201).json({
+        success: true,
+        message: 'Account created! Taking you to the movies...',
+        redirect: '/home.html',
+      });
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -282,11 +306,22 @@ app.post('/api/login', async (req, res) => {
     // Create session
     req.session.userId = user.userId;
     req.session.userName = user.name;
-
-    res.json({
-      success: true,
-      message: 'Login successful!',
-      redirect: '/home.html',
+    
+    // Force save session before sending response (critical for serverless/Vercel)
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Session error. Please try again.',
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: 'Login successful!',
+        redirect: '/home.html',
+      });
     });
   } catch (error) {
     console.error('Login error:', error);
