@@ -36,6 +36,12 @@
         </button>
       </form>
       
+      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border);">
+        <button type="button" id="demoBtn" class="btn" style="width: 100%; background: transparent; border: 1px solid var(--glass-border); color: var(--text-light);">
+          <span class="btn-text">🚀 View Demo (Skip Login)</span>
+        </button>
+      </div>
+      
       <p class="auth-footer">
         Don't have an account? <a href="register.html">Create one</a><br>
         <a href="/" class="auth-back-link">← Back to home</a>
@@ -87,6 +93,32 @@
         }
       } catch (err) {
         errorEl.textContent = 'Network error. Please try again.';
+        btn.classList.remove('loading');
+      }
+    });
+
+    // Demo login handler
+    document.getElementById('demoBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('demoBtn');
+      btn.classList.add('loading');
+      
+      try {
+        const res = await fetch('/api/demo-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          window.location.href = data.redirect || '/home.html';
+        } else {
+          alert(data.message || 'Demo login failed');
+          btn.classList.remove('loading');
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
         btn.classList.remove('loading');
       }
     });

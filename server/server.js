@@ -300,6 +300,21 @@ app.post('/api/login', async (req, res) => {
 });
 
 /**
+ * POST /api/demo-login - Demo login (bypasses authentication for testing)
+ */
+app.post('/api/demo-login', (req, res) => {
+  // Create a demo session
+  req.session.userId = 'demo-user';
+  req.session.userName = 'Demo User';
+  
+  res.json({
+    success: true,
+    message: 'Demo session created!',
+    redirect: '/home.html',
+  });
+});
+
+/**
  * POST /api/logout - Destroy session
  */
 app.post('/api/logout', (req, res) => {
