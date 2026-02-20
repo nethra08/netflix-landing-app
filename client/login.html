@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Movie App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page">
+  <div class="auth-background"></div>
+  
+  <main class="auth-container">
+    <div class="auth-card glass-card">
+      <h1 class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle">Sign in to explore movies</p>
+      
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="userId">User ID</label>
+          <input type="text" id="userId" name="userId" placeholder="Enter your user ID" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+        
+        <div id="loginError" class="error-message" role="alert"></div>
+        
+        <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+          <span class="btn-text">Sign In</span>
+          <span class="btn-loader"></span>
+        </button>
+      </form>
+      
+      <p class="auth-footer">
+        Don't have an account? <a href="register.html">Create one</a><br>
+        <a href="/" class="auth-back-link">← Back to home</a>
+      </p>
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script>
+    // Redirect if already logged in
+    fetch('/api/session', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          window.location.href = '/home.html';
+        }
+      });
+
+    // Login form handler
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = document.getElementById('loginBtn');
+      const errorEl = document.getElementById('loginError');
+      
+      btn.classList.add('loading');
+      errorEl.textContent = '';
+      
+      const formData = {
+        userId: document.getElementById('userId').value.trim(),
+        password: document.getElementById('password').value,
+      };
+      
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(formData),
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          window.location.href = data.redirect || '/home.html';
+        } else {
+          errorEl.textContent = data.message || 'Login failed';
+          btn.classList.remove('loading');
+        }
+      } catch (err) {
+        errorEl.textContent = 'Network error. Please try again.';
+        btn.classList.remove('loading');
+      }
+    });
+  </script>
+</body>
+</html>

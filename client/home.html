@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie App - Discover</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="home-page">
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <a href="/home.html" class="navbar-logo">MOVIE</a>
+    <div class="navbar-center">
+      <div class="search-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search for movies...">
+      </div>
+    </div>
+    <button class="btn-logout" id="logoutBtn">Logout</button>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">Discover Movies</h1>
+      <p class="hero-desc">Search thousands of movies. Click any poster to see details, cast, ratings, and more.</p>
+    </div>
+  </section>
+
+  <!-- Search Results Section -->
+  <section class="movie-section" id="searchSection" style="display: none;">
+    <h2 class="section-title">Search Results</h2>
+    <div class="movie-row" id="searchResults"></div>
+  </section>
+
+  <!-- Loading State -->
+  <section class="movie-section" id="loadingSection" style="display: none;">
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <span>Loading movies...</span>
+    </div>
+  </section>
+
+  <!-- Popular Movies (Default) -->
+  <section class="movie-section" id="popularSection">
+    <h2 class="section-title">Popular Movies</h2>
+    <div class="movie-row" id="popularMovies"></div>
+  </section>
+
+  <!-- Movie Modal -->
+  <div class="modal-overlay" id="movieModal">
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+      <div class="modal-poster-wrap">
+      <img class="modal-poster" id="modalPoster" src="" alt="">
+    </div>
+      <div class="modal-body">
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-meta" id="modalMeta"></p>
+        <p class="modal-plot" id="modalPlot"></p>
+        <p class="modal-detail"><strong>Actors:</strong> <span id="modalActors"></span></p>
+        <p class="modal-detail"><strong>Genre:</strong> <span id="modalGenre"></span></p>
+        <p class="modal-detail"><strong>IMDB Rating:</strong> <span id="modalRating"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/movies.js"></script>
+</body>
+</html>
